@@ -1,8 +1,9 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { RenderPipeline } from "./render-pipeline";
-import { AssetManager, ModelAsset } from "./asset-manager";
-import { Character } from "./animated-object";
+import { AssetManager } from "./asset-manager";
+import { Character } from "./character";
+import { KeyboardListener } from "../listeners/keyboard-listener";
 
 export class GameState {
   private renderPipeline: RenderPipeline;
@@ -13,6 +14,8 @@ export class GameState {
   private controls: OrbitControls;
 
   private character: Character;
+
+  private keyboardListener = new KeyboardListener();
 
   constructor(private assetManager: AssetManager) {
     this.setupCamera();
@@ -29,8 +32,11 @@ export class GameState {
 
     this.character = new Character(assetManager);
     this.character.position.z = -0.5;
-    this.character.playAnimation("idle");
     this.scene.add(this.character);
+
+    // Hotkeys for toggling between animations
+    console.log("Press R to run");
+    this.keyboardListener.on("r", this.onPressR);
 
     // Start game
     this.update();
@@ -50,6 +56,10 @@ export class GameState {
     directLight.position.copy(new THREE.Vector3(0.75, 1, 0.75).normalize());
     this.scene.add(directLight);
   }
+
+  private onPressR = () => {
+    this.character.changeAnimationState("run");
+  };
 
   private update = () => {
     requestAnimationFrame(this.update);

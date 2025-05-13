@@ -6,6 +6,9 @@ import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 
 export enum AnimationAsset {
   Idle = "A_Idle_Standing_Masc.fbx",
+  IdleToRun = "A_Idle_ToRunF_Masc.fbx",
+  Run = "A_Run_F_Masc.fbx",
+  Sprint = "A_Sprint_F_Masc.fbx",
 }
 
 export enum ModelAsset {
