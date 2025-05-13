@@ -5,15 +5,18 @@ import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 
 export enum AnimationAsset {
+  Idle = "A_Idle_Standing_Masc.fbx",
   BANDIT_IDLE = "idle.fbx",
 }
 
 export enum ModelAsset {
+  DummyCharacter = "PolygonSyntyCharacter.fbx",
   BANDIT = "bandit.fbx",
   BOX_SMALL = "box-small.glb",
 }
 
 export enum TextureAsset {
+  Dummy = "T_Polygon_Dummy_01.png",
   BANDIT = "bandit-texture.png",
   HDR = "orchard_cartoony.hdr",
 }
@@ -37,7 +40,9 @@ export class AssetManager {
 
     model.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        child.material.map = texture;
+        const material = child.material as THREE.MeshLambertMaterial;
+        material.map = texture;
+        material.vertexColors = false;
       }
     });
   }
@@ -48,6 +53,7 @@ export class AssetManager {
       return SkeletonUtils.clone(model);
     }
 
+    console.error(name + " model not found");
     // Ensure we always return an object 3d
     return new THREE.Mesh(
       new THREE.SphereGeometry(),
@@ -68,20 +74,12 @@ export class AssetManager {
   }
 
   private loadModels() {
-    this.loadModel(ModelAsset.BANDIT);
-
-    this.loadModel(ModelAsset.BOX_SMALL, (group: THREE.Group) => {
-      group.traverse((child: THREE.Object3D) => {
-        if (child instanceof THREE.Mesh) {
-          child.material.metalness = 0; // kenney assets require this to render correctly
-        }
-      });
-    });
+    this.loadModel(ModelAsset.DummyCharacter);
   }
 
   private loadTextures() {
     this.loadTexture(
-      TextureAsset.BANDIT,
+      TextureAsset.Dummy,
       (texture) => (texture.colorSpace = THREE.SRGBColorSpace)
     );
 

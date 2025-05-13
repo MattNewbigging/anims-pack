@@ -8,7 +8,7 @@ import {
 
 export type AnimatedObjectState = "idle";
 
-export class AnimatedObject extends THREE.Object3D {
+export class Character extends THREE.Object3D {
   private mixer: THREE.AnimationMixer;
   private actions = new Map<AnimatedObjectState, THREE.AnimationAction>();
   private currentAction?: THREE.AnimationAction;
@@ -17,14 +17,17 @@ export class AnimatedObject extends THREE.Object3D {
     super();
 
     // Setup mesh
-    const mesh = assetManager.getModel(ModelAsset.BANDIT);
-    assetManager.applyModelTexture(mesh, TextureAsset.BANDIT);
+    const mesh = assetManager.getModel(ModelAsset.DummyCharacter);
+    assetManager.applyModelTexture(mesh, TextureAsset.Dummy);
 
     this.add(mesh);
 
     // Animations
     this.mixer = new THREE.AnimationMixer(mesh);
     this.setupAnimations();
+
+    // Scale
+    this.scale.multiplyScalar(0.01);
   }
 
   playAnimation(name: AnimatedObjectState) {
@@ -52,9 +55,7 @@ export class AnimatedObject extends THREE.Object3D {
   }
 
   private setupAnimations() {
-    const idleClip = this.assetManager.animations.get(
-      AnimationAsset.BANDIT_IDLE
-    )!;
+    const idleClip = this.assetManager.animations.get(AnimationAsset.Idle)!;
     const idleAction = this.mixer.clipAction(idleClip);
     this.actions.set("idle", idleAction);
   }
