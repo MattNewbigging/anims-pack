@@ -35,8 +35,7 @@ export class GameState {
     this.scene.add(this.character);
 
     // Hotkeys for toggling between animations
-    console.log("Press R to run");
-    this.keyboardListener.on("r", this.onPressR);
+    this.keyboardListener.on(" ", this.onPressSpace);
 
     // Start game
     this.update();
@@ -57,8 +56,8 @@ export class GameState {
     this.scene.add(directLight);
   }
 
-  private onPressR = () => {
-    this.character.changeAnimationState("run");
+  private onPressSpace = () => {
+    this.character.changeAnimationState("jump");
   };
 
   private update = () => {

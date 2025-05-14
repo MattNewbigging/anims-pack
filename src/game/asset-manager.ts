@@ -9,6 +9,8 @@ export enum AnimationAsset {
   IdleToRun = "A_Idle_ToRunF_Masc.fbx",
   Run = "A_Run_F_Masc.fbx",
   Sprint = "A_Sprint_F_Masc.fbx",
+  Jump = "A_Jump_Sprinting_Masc.fbx", // doesn't move char at all
+  JumpRMV = "A_Jump_Sprinting_RootMotionVertical_Masc.fbx", // moves char vertically
 }
 
 export enum ModelAsset {

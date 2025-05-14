@@ -7,10 +7,10 @@ import {
 } from "./asset-manager";
 
 // Main animation states
-export type AnimationState = "idle" | "run";
+export type AnimationState = "idle" | "run" | "jump";
 
 // Names of all animations, including transitions between main states
-export type AnimationName = "idle" | "idleToRun" | "run" | "sprint";
+export type AnimationName = "idle" | "idleToRun" | "run" | "sprint" | "jump";
 
 export class Character extends THREE.Object3D {
   private mixer: THREE.AnimationMixer;
@@ -49,12 +49,17 @@ export class Character extends THREE.Object3D {
   changeAnimationState(newState: AnimationState) {
     if (this.currentState === newState) return; // already there
 
-    // Find the right transition to get to this state
-    // TODO neaten this up later
-
-    if (this.currentState === "idle" && newState === "run") {
-      // Need to first play transition, then run when transition ends
-      this.queueAnimations("idleToRun", "run");
+    switch (newState) {
+      case "run":
+        this.currentState = "run";
+        this.playAnimation("sprint");
+        break;
+      case "jump":
+        if (this.currentState === "run") {
+          this.currentState = "jump";
+          this.playAnimation("jump");
+        }
+        break;
     }
   }
 
@@ -88,7 +93,14 @@ export class Character extends THREE.Object3D {
   }
 
   private onAnimationFinish = (event: { action: THREE.AnimationAction }) => {
-    // Check if there is anything else in the queue to play now
+    const actionName = event.action.getClip().name;
+
+    console.log("finished: ", actionName);
+
+    if (actionName === "jump") {
+      // Continue sprinting
+      this.changeAnimationState("run");
+    }
   };
 
   private setupAnimations() {
@@ -113,5 +125,12 @@ export class Character extends THREE.Object3D {
     sprintClip.name = "sprint";
     const sprintAction = this.mixer.clipAction(sprintClip);
     this.actions.set("sprint", sprintAction);
+
+    const jumpClip = animations.get(AnimationAsset.Jump)!;
+    jumpClip.name = "jump";
+    const jumpAction = this.mixer.clipAction(jumpClip);
+    jumpAction.clampWhenFinished = true;
+    jumpAction.setLoop(THREE.LoopOnce, 1);
+    this.actions.set("jump", jumpAction);
   }
 }
