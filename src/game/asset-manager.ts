@@ -5,16 +5,11 @@ import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 
 export enum AnimationAsset {
-  Idle = "A_Idle_Standing_Masc.fbx",
-  IdleToRun = "A_Idle_ToRunF_Masc.fbx",
-  Run = "A_Run_F_Masc.fbx",
   Sprint = "A_Sprint_F_Masc.fbx",
-  //Jump = "jumping_trimmed_binary.fbx", // doesn't move char at all
-  //JumpRM = "A_Jump_Idle_RootMotion_Masc.fbx", // moves char vertically
-  JumpStart = "jumping_start.fbx",
-  JumpLoop = "jumping_loop.fbx",
-  JumpEnd = "jumping_end.fbx",
-  //Slide = "A_Sprint_ToCrouch_Masc.fbx",
+  JumpStart = "jump_start.fbx",
+  JumpLoop = "jump_loop.fbx",
+  JumpEnd = "jump_end.fbx",
+  Slide = "A_Sprint_ToCrouch_Masc.fbx",
 }
 
 export enum ModelAsset {
@@ -98,17 +93,9 @@ export class AssetManager {
   }
 
   private loadAnimations() {
-    this.loadAnimation(AnimationAsset.Idle);
-    this.loadAnimation(AnimationAsset.IdleToRun);
-    this.loadAnimation(AnimationAsset.Run);
-    this.loadAnimation(AnimationAsset.Sprint);
-    this.loadAnimation(AnimationAsset.JumpStart);
-    this.loadAnimation(AnimationAsset.JumpLoop);
-    this.loadAnimation(AnimationAsset.JumpEnd);
-
-    // Object.values(AnimationAsset).forEach((filename) =>
-    //   this.loadAnimation(filename)
-    // );
+    Object.values(AnimationAsset).forEach((filename) =>
+      this.loadAnimation(filename)
+    );
   }
 
   private loadModel(

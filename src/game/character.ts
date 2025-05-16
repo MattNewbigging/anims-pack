@@ -11,14 +11,11 @@ export type AnimationState = "idle" | "run" | "jump";
 
 // Names of all animations, including transitions between main states
 export type AnimationName =
-  | "idle"
-  | "idleToRun"
-  | "run"
   | "sprint"
-  | "jump"
   | "jumpStart"
   | "jumpLoop"
-  | "jumpEnd";
+  | "jumpEnd"
+  | "slide";
 
 export class Character extends THREE.Object3D {
   private mixer: THREE.AnimationMixer;
@@ -26,9 +23,6 @@ export class Character extends THREE.Object3D {
 
   private currentState: AnimationState;
   private currentAction: THREE.AnimationAction;
-  private currentActionName: AnimationName;
-
-  private actionQueue: AnimationName[] = [];
 
   constructor(private assetManager: AssetManager) {
     super();
@@ -47,9 +41,8 @@ export class Character extends THREE.Object3D {
     // Scale
     this.scale.multiplyScalar(0.01);
 
-    // Default to idle
+    // Default to sprint
     this.currentState = "run";
-    this.currentActionName = "sprint";
     this.currentAction = this.actions.get("sprint")!;
     this.currentAction.play();
   }
@@ -75,10 +68,6 @@ export class Character extends THREE.Object3D {
     this.mixer.update(dt);
   }
 
-  private queueAnimations(...names: AnimationName[]) {
-    names.forEach((name) => this.actionQueue.push(name));
-  }
-
   playAnimation(name: AnimationName) {
     // Find the new action with the given name
     const nextAction = this.actions.get(name);
@@ -88,31 +77,35 @@ export class Character extends THREE.Object3D {
       );
     }
 
-    // Reset the next action then fade to it from the current action
+    // Reset the next action
     nextAction.reset().setEffectiveTimeScale(1).setEffectiveWeight(1);
 
-    this.currentAction
-      ? nextAction.crossFadeFrom(this.currentAction, 0.25, false).play()
-      : nextAction.play();
+    if (name === "sprint") {
+      this.currentAction.stop();
+      nextAction.play();
+    } else {
+      nextAction.crossFadeFrom(this.currentAction, 0.25, false).play();
+    }
+
+    // if (name === "jumpStart" || name === "jumpEnd") {
+    //   nextAction.crossFadeFrom(this.currentAction, 0.25, false).play();
+    // } else {
+    //   this.currentAction.stop();
+    //   nextAction.play();
+    // }
+
+    // this.currentAction
+    //   ? nextAction.crossFadeFrom(this.currentAction, 0, false).play()
+    //   : nextAction.play();
 
     // Next is now current
     this.currentAction = nextAction;
-    this.currentActionName = name;
   }
 
   private onAnimationFinish = (event: { action: THREE.AnimationAction }) => {
     const actionName = event.action.getClip().name as AnimationName;
 
     console.log("finished: ", actionName);
-
-    // if (actionName === "jump") {
-    //   // Continue sprinting
-    //   this.changeAnimationState("run");
-    // }
-
-    if (actionName === "jumpStart") {
-      this.playAnimation("jumpLoop");
-    }
 
     switch (actionName) {
       case "jumpStart":
@@ -140,7 +133,6 @@ export class Character extends THREE.Object3D {
     this.actions.set("jumpStart", jumpStartAction);
 
     const jumpLoopClip = animations.get(AnimationAsset.JumpLoop)!;
-    console.log(jumpLoopClip);
     jumpLoopClip.name = "jumpLoop";
     const jumpLoopAction = this.mixer.clipAction(jumpLoopClip);
     jumpLoopAction.setLoop(THREE.LoopRepeat, Infinity);
@@ -150,7 +142,11 @@ export class Character extends THREE.Object3D {
     jumpEndClip.name = "jumpEnd";
     const jumpEndAction = this.mixer.clipAction(jumpEndClip);
     jumpEndAction.setLoop(THREE.LoopOnce, 1);
-    jumpEndAction.clampWhenFinished = true;
     this.actions.set("jumpEnd", jumpEndAction);
+
+    const slideClip = animations.get(AnimationAsset.Slide)!;
+    slideClip.name = "slide";
+    const slideAction = this.mixer.clipAction(slideClip);
+    this.actions.set("slide", slideAction);
   }
 }

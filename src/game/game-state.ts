@@ -37,6 +37,7 @@ export class GameState {
     // Hotkeys for toggling between animations
     this.keyboardListener.on(" ", this.onPressSpace);
     this.keyboardListener.on("l", this.onPressL);
+    this.keyboardListener.on("s", this.onPressS);
 
     // Start game
     this.update();
@@ -63,6 +64,10 @@ export class GameState {
 
   private onPressL = () => {
     this.character.playAnimation("jumpEnd");
+  };
+
+  private onPressS = () => {
+    this.character.playAnimation("slide");
   };
 
   private update = () => {
