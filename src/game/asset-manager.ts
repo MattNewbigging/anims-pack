@@ -9,8 +9,12 @@ export enum AnimationAsset {
   IdleToRun = "A_Idle_ToRunF_Masc.fbx",
   Run = "A_Run_F_Masc.fbx",
   Sprint = "A_Sprint_F_Masc.fbx",
-  Jump = "A_Jump_Sprinting_Masc.fbx", // doesn't move char at all
-  JumpRMV = "A_Jump_Sprinting_RootMotionVertical_Masc.fbx", // moves char vertically
+  //Jump = "jumping_trimmed_binary.fbx", // doesn't move char at all
+  //JumpRM = "A_Jump_Idle_RootMotion_Masc.fbx", // moves char vertically
+  JumpStart = "jumping_start.fbx",
+  JumpLoop = "jumping_loop.fbx",
+  JumpEnd = "jumping_end.fbx",
+  //Slide = "A_Sprint_ToCrouch_Masc.fbx",
 }
 
 export enum ModelAsset {
@@ -67,6 +71,9 @@ export class AssetManager {
     this.loadTextures();
     this.loadAnimations();
 
+    this.loadingManager.onError = (error) =>
+      console.error("Loading error", error);
+
     return new Promise((resolve) => {
       this.loadingManager.onLoad = () => {
         resolve();
@@ -91,9 +98,17 @@ export class AssetManager {
   }
 
   private loadAnimations() {
-    Object.values(AnimationAsset).forEach((filename) =>
-      this.loadAnimation(filename)
-    );
+    this.loadAnimation(AnimationAsset.Idle);
+    this.loadAnimation(AnimationAsset.IdleToRun);
+    this.loadAnimation(AnimationAsset.Run);
+    this.loadAnimation(AnimationAsset.Sprint);
+    this.loadAnimation(AnimationAsset.JumpStart);
+    this.loadAnimation(AnimationAsset.JumpLoop);
+    this.loadAnimation(AnimationAsset.JumpEnd);
+
+    // Object.values(AnimationAsset).forEach((filename) =>
+    //   this.loadAnimation(filename)
+    // );
   }
 
   private loadModel(
@@ -140,6 +155,7 @@ export class AssetManager {
 
   private loadAnimation(filename: AnimationAsset) {
     const path = `${getPathPrefix()}/anims/${filename}`;
+    console.log("loading", filename);
     const url = getUrl(path);
 
     this.fbxLoader.load(url, (group) => {

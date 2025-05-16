@@ -10,7 +10,15 @@ import {
 export type AnimationState = "idle" | "run" | "jump";
 
 // Names of all animations, including transitions between main states
-export type AnimationName = "idle" | "idleToRun" | "run" | "sprint" | "jump";
+export type AnimationName =
+  | "idle"
+  | "idleToRun"
+  | "run"
+  | "sprint"
+  | "jump"
+  | "jumpStart"
+  | "jumpLoop"
+  | "jumpEnd";
 
 export class Character extends THREE.Object3D {
   private mixer: THREE.AnimationMixer;
@@ -57,7 +65,7 @@ export class Character extends THREE.Object3D {
       case "jump":
         if (this.currentState === "run") {
           this.currentState = "jump";
-          this.playAnimation("jump");
+          this.playAnimation("jumpStart");
         }
         break;
     }
@@ -71,7 +79,7 @@ export class Character extends THREE.Object3D {
     names.forEach((name) => this.actionQueue.push(name));
   }
 
-  private playAnimation(name: AnimationName) {
+  playAnimation(name: AnimationName) {
     // Find the new action with the given name
     const nextAction = this.actions.get(name);
     if (!nextAction) {
@@ -93,44 +101,56 @@ export class Character extends THREE.Object3D {
   }
 
   private onAnimationFinish = (event: { action: THREE.AnimationAction }) => {
-    const actionName = event.action.getClip().name;
+    const actionName = event.action.getClip().name as AnimationName;
 
     console.log("finished: ", actionName);
 
-    if (actionName === "jump") {
-      // Continue sprinting
-      this.changeAnimationState("run");
+    // if (actionName === "jump") {
+    //   // Continue sprinting
+    //   this.changeAnimationState("run");
+    // }
+
+    if (actionName === "jumpStart") {
+      this.playAnimation("jumpLoop");
+    }
+
+    switch (actionName) {
+      case "jumpStart":
+        this.playAnimation("jumpLoop");
+        break;
+      case "jumpEnd":
+        this.playAnimation("sprint");
+        break;
     }
   };
 
   private setupAnimations() {
     const { animations } = this.assetManager;
 
-    const idleClip = animations.get(AnimationAsset.Idle)!;
-    idleClip.name = "idle";
-    const idleAction = this.mixer.clipAction(idleClip);
-    this.actions.set("idle", idleAction);
-
-    const idleToRunClip = animations.get(AnimationAsset.IdleToRun)!;
-    idleToRunClip.name = "idleToRun";
-    const idleToRunAction = this.mixer.clipAction(idleToRunClip);
-    this.actions.set("idleToRun", idleToRunAction);
-
-    const runClip = animations.get(AnimationAsset.Run)!;
-    runClip.name = "run";
-    const runAction = this.mixer.clipAction(runClip);
-    this.actions.set("run", runAction);
-
     const sprintClip = animations.get(AnimationAsset.Sprint)!;
     sprintClip.name = "sprint";
     const sprintAction = this.mixer.clipAction(sprintClip);
     this.actions.set("sprint", sprintAction);
 
-    const jumpClip = animations.get(AnimationAsset.Jump)!;
-    jumpClip.name = "jump";
-    const jumpAction = this.mixer.clipAction(jumpClip);
-    jumpAction.clampWhenFinished = true;
-    jumpAction.setLoop(THREE.LoopOnce, 1);
-    this.actions.set("jump", jumpAction);
+    const jumpStartClip = animations.get(AnimationAsset.JumpStart)!;
+    jumpStartClip.name = "jumpStart";
+    const jumpStartAction = this.mixer.clipAction(jumpStartClip);
+    jumpStartAction.setLoop(THREE.LoopOnce, 1);
+    jumpStartAction.clampWhenFinished = true;
+    this.actions.set("jumpStart", jumpStartAction);
+
+    const jumpLoopClip = animations.get(AnimationAsset.JumpLoop)!;
+    console.log(jumpLoopClip);
+    jumpLoopClip.name = "jumpLoop";
+    const jumpLoopAction = this.mixer.clipAction(jumpLoopClip);
+    jumpLoopAction.setLoop(THREE.LoopRepeat, Infinity);
+    this.actions.set("jumpLoop", jumpLoopAction);
+
+    const jumpEndClip = animations.get(AnimationAsset.JumpEnd)!;
+    jumpEndClip.name = "jumpEnd";
+    const jumpEndAction = this.mixer.clipAction(jumpEndClip);
+    jumpEndAction.setLoop(THREE.LoopOnce, 1);
+    jumpEndAction.clampWhenFinished = true;
+    this.actions.set("jumpEnd", jumpEndAction);
   }
 }
